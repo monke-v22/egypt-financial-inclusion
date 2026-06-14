@@ -1,33 +1,38 @@
 import wbgapi as wb
 import pandas as pd
 import requests
+from dotenv import load_dotenv
+import os
 
-country = "EGY"
-years = range(2011, 2024)
+load_dotenv()
+FRED_API_KEY = os.getenv("FRED_API_KEY")
+
+COUNTRY = "EGY"
+YEARS = range(2011, 2024)
+
 indicators = {
-    "FX.OWN.TOTL.ZS": "account_ownership_pct",
-    "FB.BNK.CAPA.ZS": "bank_capital_to_assets",
+    "FX.OWN.TOTL.ZS":    "account_ownership_pct",
+    "FB.BNK.CAPA.ZS":    "bank_capital_to_assets",
     "FS.AST.DOMS.GD.ZS": "domestic_credit_pct_gdp",
-    "FP.CPI.TOTL.ZG": "inflation_rate",
-    "NY.GDP.PCAP.CD": "gdp_per_capita_usd",
-    "FB.CBK.BRCH.P5": "bank_branches_per_100k",
+    "FP.CPI.TOTL.ZG":    "inflation_rate",
+    "NY.GDP.PCAP.CD":    "gdp_per_capita_usd",
+    "FB.CBK.BRCH.P5":    "bank_branches_per_100k",
 }
 
 def fetch_world_bank():
     frames = []
     for code, name in indicators.items():
-        df = wb.data.DataFrame(code, country, time = years).T
+        df = wb.data.DataFrame(code, COUNTRY, time=YEARS).T
         df.columns = [name]
         frames.append(df)
 
     combined = pd.concat(frames, axis=1)
     combined.index.name = "year"
     combined.to_csv("data/raw/world_bank.csv")
-    print("SUCCESFULLY!, World bank data is saved :)")
+    print("SUCCESS! World Bank data saved :)")
+
 
 def fetch_fred():
-    FRED_API_KEY = "fb11bef5215ff9d8c629a93df88d7742" 
-
     series = {
         "XRNCUSEGA618NRUG": "egy_usd_exchange_rate",
         "FPCPITOTLZGEGY":   "egy_inflation_fred",
@@ -42,7 +47,7 @@ def fetch_fred():
         )
         response = requests.get(url)
         data = response.json()
-        
+        print(data)
 
         df = pd.DataFrame(data["observations"])[["date", "value"]]
         df["date"] = pd.to_datetime(df["date"])
@@ -55,7 +60,8 @@ def fetch_fred():
     combined = pd.concat(frames, axis=1)
     combined.index.name = "year"
     combined.to_csv("data/raw/fred_data.csv")
-    print("SUCCESFULLY!, FRED data saved :)")
+    print("SUCCESS! FRED data saved :)")
+
 
 if __name__ == "__main__":
     fetch_world_bank()
