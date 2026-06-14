@@ -12,4 +12,18 @@ indicators = {
     "FB.CBK.BRCH.P5": "bank_branches_per_100k",
 }
 
+def fetch_world_bank():
+    frames = []
+    for code, name in indicators.items():
+        df = wb.data.DataFrame(code, COUNTRY, time = YEARS).T
+        df.columns = [name]
+        frames.append(df)
+
+compined = pd.concat(frames, axis = 1)
+compined.index.name = "year"
+compined.to_csv("data/raw/world_bank.csv")
+print("SUCCESFULLY!, World bank data is saved :)")
+
+if __name__ == "__main__":
+    fetch_world_bank()
 
